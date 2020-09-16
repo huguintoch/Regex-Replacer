@@ -42,8 +42,7 @@ class Automata:
                 prev.addTransition(i[j][0], current)
                 if "*" not in i[j]:
                     prev = current
-                    if j == len(i)-1 or j < len(i)-1 and "*" not in i[j+1]:
-                        finalStates = []
+                    finalStates = []
                 else:
                     current.addTransition(i[j][0], current)
                     finalStates.append(current)
@@ -76,25 +75,70 @@ class Automata:
         print(self.initialState)
         print(self.finalStates)
 
-FSA = Automata("a*c")
-FSA.printAutomata()
-inputStr = "aaaaaaaac"
-replacer = "x"
-res = ""
+# Functions
 
-i = j = 0
-while j < len(inputStr):
-    currentOutput = prevOutput = FSA.initialState.applySymbol(inputStr[j])
-    while currentOutput != None and j < len(inputStr):
-        j+=1
-        prevOutput = currentOutput
-        if j <= len(inputStr)-1:
-            currentOutput = currentOutput.applySymbol(inputStr[j])
-    if prevOutput in FSA.finalStates:
-        res += replacer
-    else:
-        if i == j:
+def replaceRegex(inputStr, regex, replacement):
+
+  FSA = Automata(regex)
+  res = ""
+  i = j = 0
+  size = len(inputStr)
+
+  if(size == 0 and FSA.initialState in FSA.finalStates):
+    res = replacement
+  else: 
+    while j < size:
+        currentOutput = prevOutput = FSA.initialState.applySymbol(inputStr[j])
+        while currentOutput != None and j < len(inputStr):
             j+=1
-        res += inputStr[i:j]
-    i=j
-print(res)
+            prevOutput = currentOutput
+            if j <= size-1:
+                currentOutput = currentOutput.applySymbol(inputStr[j])
+        if prevOutput in FSA.finalStates:
+            res += replacement
+        else:
+            if i == j:
+                j+=1
+            res += inputStr[i:j]
+        i=j
+
+  return res
+
+def validRegex(regex):
+  size = len(regex)
+  if size == 0:
+    return False
+  for i in range(size):
+    if i == 0 and (regex[i] == "*" or regex[i] == "+"):
+      return False
+    elif i < size-1:
+      if regex[i] == "*":
+        if i == size-2 and (regex[i+1] == "+" or regex[i+1] == "*"):
+          return False
+        elif regex[i+1] == "*":
+          return False
+      elif regex[i] == "+" and (regex[i+1] == "+" or regex[i+1] == "*"):
+        return False
+  return True
+
+test = False
+
+if not test:
+    # Main
+    while True:
+        inputStr = str(input("Input string: "))
+        replacement = str(input("Input replacement: "))
+        regex = str(input("Input regular expression: "))
+        while not validRegex(regex):
+            print("Invalid regex. Valid operators: + , *")
+            regex = str(input("Input egular expression: "))
+
+        res = replaceRegex(inputStr, regex, replacement)
+        print(res+"\n")
+        print("----------------------------------------------\n")
+else:
+    inputStr = "aa abbbbb aa"
+    regex = "a *ab*"
+    replacement = "0"
+    res = replaceRegex(inputStr, regex, replacement)
+    print(res+"\n")
